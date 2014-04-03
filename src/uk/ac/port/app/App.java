@@ -5,8 +5,7 @@ import uk.ac.port.models.Project;
 
 public class App {
 	public static void main(String[] args) {
-		for(Project p : ProjectManager.all()) {
+		for (Project p : ProjectManager.search("desc"))
 			System.out.println(p);
-		}
 	}
 }

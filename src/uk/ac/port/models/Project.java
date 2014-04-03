@@ -82,7 +82,7 @@ public class Project {
 
 	@Override
 	public String toString() {
-		return "Project [id=" + id + ", description=" + description
+		return "Project [id=" + id + ", name=" + name + ", description=" + description
 				+ ", creationTime=" + format(creationTime, "MM/dd/yy - hh:mm") + ", modificationTime="
 				+ format(modificationTime, "MM/dd/yy - HH:mm") + ", molecules=" + molecules.size() + "]";
 	}

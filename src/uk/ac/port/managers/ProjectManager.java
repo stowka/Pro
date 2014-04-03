@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,9 +48,51 @@ public class ProjectManager {
 		addMolecules(p);
 		return p;
 	}
+	
+	public static List<Project> search(String pattern) {
+		int id = 0;
+		String name = null;
+		String description = null;
+		String creationTime = null;
+		String modificationTime = null;
 
-	public static void update(Project p) {
 		PreparedStatement pstm = null;
+		ResultSet rset = null;
+
+		List<Project> projects = new ArrayList<Project>();
+
+		try {
+			pstm = CONN.prepareStatement("SELECT * FROM project WHERE name LIKE ?");
+			pstm.setString(1, "'%" + pattern + "%'");
+			rset = pstm.executeQuery();
+			while (rset.next()) {
+				id = rset.getInt("id");
+				name = rset.getString("name");
+				description = rset.getString("description");
+				creationTime = rset.getString("creationTime");
+				modificationTime = rset.getString("modificationTime");
+				projects.add(new Project(id, name, description, creationTime,
+						modificationTime));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				pstm.close();
+				rset.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		for (Project p : projects)
+			addMolecules(p);
+		return projects;
+	}
+
+	public static boolean update(Project p) {
+		PreparedStatement pstm = null;
+		boolean ok = true;
+		
 		try {
 			pstm = CONN.prepareStatement("UPDATE project SET name = ?, description = ? WHERE id = ?");
 			pstm.setString(1, p.getName());
@@ -58,34 +101,45 @@ public class ProjectManager {
 			pstm.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
+			ok = false;
 		} finally {
 			try {
 				pstm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				ok = false;
 			}
-		}
+		}	
+		return ok;
 	}
 
-	public static void delete(Project p) {
+	public static boolean delete(Project p) {
 		PreparedStatement pstm = null;
+		boolean ok = true;
+		
 		try {
 			pstm = CONN.prepareStatement("DELETE FROM project WHERE id = ?");
 			pstm.setInt(1, p.getId());
 			pstm.executeUpdate();
+			System.out.println("Row deleted");
 		} catch (SQLException e) {
 			e.printStackTrace();
+			ok = false;
 		} finally {
 			try {
 				pstm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				ok = false;
 			}
 		}
+		return ok;
 	}
 
-	public static void insert(String name, String description) {
+	public static boolean insert(String name, String description) {
 		PreparedStatement pstm = null;
+		boolean ok = true;
+		
 		try {
 			pstm = CONN
 					.prepareStatement("INSERT INTO project (name, description) VALUES (?, ?)");
@@ -95,13 +149,16 @@ public class ProjectManager {
 			System.out.println("New row in `project`");
 		} catch (SQLException e) {
 			e.printStackTrace();
+			ok = false;
 		} finally {
 			try {
 				pstm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				ok = false;
 			}
 		}
+		return ok;
 	}
 
 	public static List<Project> all() {
@@ -168,5 +225,27 @@ public class ProjectManager {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public static boolean save() {
+		Statement stmt = null;
+		boolean ok = true;
+		
+		try {
+			stmt = CONN.createStatement();
+			stmt.executeUpdate("SHUTDOWN");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			ok = false;
+		} finally {
+			try {
+				stmt.close();
+				CONN.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				ok = false;
+			}
+		}		
+		return ok;
 	}
 }
