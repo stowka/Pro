@@ -99,6 +99,7 @@ public class ProjectManager {
 			pstm.setString(2, p.getDescription());
 			pstm.setInt(3, p.getId());
 			pstm.executeUpdate();
+			System.out.println("Row updated");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			ok = false;
@@ -136,10 +137,8 @@ public class ProjectManager {
 		return ok;
 	}
 
-	public static boolean insert(String name, String description) {
+	public static int insert(String name, String description) {
 		PreparedStatement pstm = null;
-		boolean ok = true;
-		
 		try {
 			pstm = CONN
 					.prepareStatement("INSERT INTO project (name, description) VALUES (?, ?)");
@@ -149,16 +148,37 @@ public class ProjectManager {
 			System.out.println("New row in `project`");
 		} catch (SQLException e) {
 			e.printStackTrace();
-			ok = false;
 		} finally {
 			try {
 				pstm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
-				ok = false;
 			}
 		}
-		return ok;
+		return lastInsertId();
+	}
+	
+	public static int lastInsertId() {
+		int id = 0;
+		Statement stmt = null;
+		ResultSet rset = null;
+		
+		try {
+			stmt = CONN.createStatement();
+			rset = stmt.executeQuery("SELECT TOP 1 id FROM project ORDER BY id DESC");
+			if (rset.next())
+				id = rset.getInt("id");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rset.close();
+				stmt.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return id;
 	}
 
 	public static List<Project> all() {
@@ -189,8 +209,8 @@ public class ProjectManager {
 			e.printStackTrace();
 		} finally {
 			try {
-				pstm.close();
 				rset.close();
+				pstm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -219,8 +239,8 @@ public class ProjectManager {
 			e.printStackTrace();
 		} finally {
 			try {
-				pstm.close();
 				rset.close();
+				pstm.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

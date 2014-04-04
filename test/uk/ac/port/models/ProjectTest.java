@@ -10,7 +10,7 @@ public class ProjectTest {
 	
 	@Test
 	public void insertTest() {
-		assertTrue(ProjectManager.insert("TEST", "DESCRIPTION"));
+		assertFalse(0 == ProjectManager.insert("TEST", "DESCRIPTION"));
 	}
 	
 	@Test
